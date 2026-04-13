@@ -1,0 +1,5 @@
+node_modules/
+.npm-pack-cache/
+*.log
+npm-debug.log*
+coverage/
