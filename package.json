@@ -12,6 +12,14 @@
     ],
     "license": "MIT",
     "author": "Cappucina contributors",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/heydaristo/Cappucina-Baileys.git"
+    },
+    "homepage": "https://github.com/heydaristo/Cappucina-Baileys#readme",
+    "bugs": {
+        "url": "https://github.com/heydaristo/Cappucina-Baileys/issues"
+    },
     "main": "lib/index.js",
     "type": "commonjs",
     "exports": {

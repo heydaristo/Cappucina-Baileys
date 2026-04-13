@@ -13,7 +13,7 @@ Library ini cocok kalau kamu ingin:
 ### Dari repository GitHub
 
 ```bash
-npm install github:USERNAME/cappucina
+npm install github:heydaristo/Cappucina-Baileys
 ```
 
 ### Dari folder lokal
@@ -57,7 +57,7 @@ start();
 
 ## Publish checklist
 
-1. Pastikan field `repository`, `homepage`, dan `bugs` di `package.json` sudah diisi sesuai repo GitHub kamu.
+1. Pastikan metadata package sudah sesuai versi rilis yang ingin kamu dorong.
 2. Jalankan `npm install`.
 3. Jalankan `npm test`.
 4. Jalankan `npm run pack:check`.
