@@ -246,6 +246,16 @@ Repository ini menggunakan basis dari fork Baileys, dan repo GitHub saat ini ter
 
 - [Nted3xec/baileys](https://github.com/Nted3xec/baileys)
 
+## Credits
+
+Library ini tidak dibuat dari nol. `cappucina` dibangun di atas basis yang berasal dari project berikut:
+
+- [LuckyArch/OurinGlitch-Baileys](https://github.com/LuckyArch/OurinGlitch-Baileys)
+- [Nted3xec/baileys](https://github.com/Nted3xec/baileys)
+- [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys)
+
+Terima kasih untuk para maintainer dan kontributor dari project-project tersebut yang menjadi dasar pengembangan library ini.
+
 ## Repository
 
 - GitHub: [heydaristo/Cappucina-Baileys](https://github.com/heydaristo/Cappucina-Baileys)
