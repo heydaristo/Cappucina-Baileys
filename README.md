@@ -1,266 +1,217 @@
-# Cappucina
+# Cappucina-Baileys
 
-`cappucina` adalah library WhatsApp Web API berbasis Baileys yang disiapkan untuk dipakai sebagai dependency bot Node.js.
+Modifikasi library **Baileys / WhatsApp Web API** yang dipakai sebagai basis koneksi bot WhatsApp. Repository ini ditujukan untuk dipakai sebagai **dependency GitHub** pada project bot milikmu, sehingga update library bisa dikelola dari repo sendiri dan tidak perlu lagi edit manual di `node_modules`.
 
-Repository ini cocok kalau kamu ingin:
+## Tentang project ini
 
-- memakai socket WhatsApp style Baileys
-- mengganti dependency custom lama seperti `ourin`
-- membagikan library langsung dari GitHub
-- memasang library lewat `package.json`
+`Cappucina-Baileys` adalah fork/modifikasi dari ekosistem Baileys yang berisi penyesuaian pada beberapa fitur WhatsApp modern, helper tambahan, utilitas newsletter/saluran, dan beberapa method praktis untuk kebutuhan bot.
 
-## Fitur
+Cocok dipakai bila kamu ingin:
+- memisahkan library koneksi dari source bot utama,
+- mengelola update lewat repo GitHub sendiri,
+- melakukan patch/fix tanpa takut perubahan hilang saat `npm install`,
+- menjaga struktur project bot tetap rapi.
 
-- kompatibel dengan `require("cappucina")`
-- bisa dipasang langsung dari repository GitHub
-- bisa dipakai dari folder lokal
-- cocok untuk bot WhatsApp berbasis CommonJS
-- siap dipakai sebagai library dependency project lain
+## Fitur utama
 
-## Requirements
+Beberapa hal yang sudah tersedia di repo ini:
 
-- Node.js 18 minimum
-- Node.js 20+ direkomendasikan
+- dukungan koneksi WhatsApp berbasis Baileys,
+- pairing code,
+- helper untuk message reaction, edit, revoke, dan deteksi tipe pesan,
+- utilitas newsletter / saluran,
+- helper label group,
+- dukungan interactive message, event message, album message, poll result, dan status mention,
+- utilitas auth state seperti `useMultiFileAuthState`,
+- export modul penting seperti `makeWASocket`, `fetchLatestBaileysVersion`, `WAProto`, `Store`, `Utils`, dan lainnya.
 
-## Install
+## Requirement
 
-### 1. Install langsung dari GitHub
+Project ini saat ini mengecek **Node.js 20+** saat instalasi.
 
 ```bash
-npm install github:heydaristo/Cappucina-Baileys
+node -v
 ```
 
-### 2. Install dari branch tertentu
+Kalau server masih di Node 18 atau lebih lama, upgrade dulu sebelum dipakai.
+
+## Instalasi
+
+### Opsi 1 — install langsung dari GitHub
 
 ```bash
 npm install github:heydaristo/Cappucina-Baileys#main
 ```
 
-### 3. Install dari tag release
+### Opsi 2 — pasang sebagai dependency alias
 
-Contoh kalau nanti kamu membuat release `v1.0.0`:
+Cara ini paling cocok kalau source bot kamu masih memakai:
 
-```bash
-npm install github:heydaristo/Cappucina-Baileys#v1.0.0
+```js
+require("ourin")
 ```
 
-### 4. Install dari `package.json`
-
-Tambahkan dependency ini ke `package.json` project user:
+Contoh di `package.json` bot:
 
 ```json
 {
   "dependencies": {
-    "cappucina": "github:heydaristo/Cappucina-Baileys"
+    "ourin": "github:heydaristo/Cappucina-Baileys#main"
   }
 }
 ```
 
-Lalu jalankan:
+Dengan cara itu, source bot tidak perlu diubah besar-besaran karena library tetap dipanggil sebagai `ourin`.
+
+## Contoh penggunaan dasar
+
+```js
+const {
+  default: makeWASocket,
+  useMultiFileAuthState,
+  fetchLatestBaileysVersion
+} = require("ourin")
+
+async function startBot() {
+  const { state, saveCreds } = await useMultiFileAuthState("session")
+  const { version } = await fetchLatestBaileysVersion()
+
+  const sock = makeWASocket({
+    auth: state,
+    version,
+    printQRInTerminal: false
+  })
+
+  sock.ev.on("creds.update", saveCreds)
+}
+
+startBot()
+```
+
+## Helper tambahan yang tersedia
+
+Beberapa helper yang terlihat tersedia di library ini:
+
+### Delay
+
+```js
+await sock.delay(3)
+```
+
+### Reaction
+
+```js
+await sock.react(m, "🔥")
+await sock.unreact(m)
+```
+
+### Edit pesan
+
+```js
+await sock.edit(m, "Pesan baru")
+```
+
+### Hapus / revoke pesan
+
+```js
+await sock.del(m)
+```
+
+### Deteksi tipe pesan
+
+```js
+const type = sock.detect(m)
+console.log(type)
+```
+
+### Label group
+
+```js
+await sock.setLabelGroup(jid, "Member Premium")
+```
+
+### Cek ID saluran / newsletter dari URL
+
+```js
+const info = await sock.cekIDSaluran(url)
+console.log(info)
+```
+
+### Follow banyak newsletter sekaligus
+
+```js
+await sock.newsletterMultipleFollow(
+  "120xxxxxxxx@newsletter 120yyyyyyyy@newsletter"
+)
+```
+
+### Cek banned number
+
+```js
+const result = await sock.checkBanned(jid)
+console.log(result)
+```
+
+## Contoh pengiriman pesan yang didukung
+
+Library ini juga memuat dukungan untuk beberapa bentuk pengiriman pesan, seperti:
+
+- `interactiveMessage`
+- `eventMessage`
+- `pollResultMessage`
+- `albumMessage`
+- `groupStatusMessage`
+- `sendStatusMention(...)`
+
+Implementasi detailnya bisa kamu sesuaikan di source bot berdasarkan kebutuhan command/plugin.
+
+## Struktur penting repository
+
+```text
+lib/
+  Defaults/
+  Signal/
+  Socket/
+  Store/
+  Types/
+  Utils/
+  WABinary/
+  WAM/
+  WAUSync/
+WAProto/
+engine-requirements.js
+package.json
+```
+
+## Workflow yang disarankan
+
+Agar rapi dan aman, gunakan alur seperti ini:
+
+1. Update library di repo `Cappucina-Baileys`.
+2. Commit dan push perubahan ke GitHub.
+3. Di repo bot utama, jalankan install ulang dependency.
+4. Restart bot.
+
+Contoh:
 
 ```bash
 npm install
+npm update ourin
 ```
 
-### 5. Install dari folder lokal
+Atau hapus lalu install ulang dependency GitHub bila perlu.
 
-Kalau library ada di folder lokal:
+## Catatan penting
 
-```bash
-npm install file:./cappucina
-```
+- Jangan jadikan edit manual di `node_modules` sebagai solusi permanen.
+- Jangan ikut push folder `node_modules` ke GitHub.
+- Sebaiknya kunci ke branch atau tag tertentu agar update tidak merusak bot secara tiba-tiba.
+- Lakukan testing pada pairing, send message, newsletter, dan event message setelah setiap update.
 
-Atau di `package.json`:
+## Lisensi
 
-```json
-{
-  "dependencies": {
-    "cappucina": "file:./cappucina"
-  }
-}
-```
+Project ini memakai lisensi **MIT** sesuai file `LICENSE` yang ada di repository.
 
-## Cara import
+## Kredit
 
-```js
-const {
-  default: makeWASocket,
-  useMultiFileAuthState,
-  makeCacheableSignalKeyStore,
-  fetchLatestBaileysVersion
-} = require("cappucina");
-```
-
-## Contoh penggunaan sederhana
-
-```js
-const {
-  default: makeWASocket,
-  useMultiFileAuthState,
-  makeCacheableSignalKeyStore,
-  fetchLatestBaileysVersion
-} = require("cappucina");
-
-async function startBot() {
-  const { state, saveCreds } = await useMultiFileAuthState("./session");
-  const { version } = await fetchLatestBaileysVersion();
-
-  const sock = makeWASocket({
-    version,
-    auth: {
-      creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys)
-    },
-    printQRInTerminal: true
-  });
-
-  sock.ev.on("creds.update", saveCreds);
-
-  sock.ev.on("connection.update", (update) => {
-    console.log("connection.update:", update);
-  });
-
-  sock.ev.on("messages.upsert", ({ messages }) => {
-    console.log("Pesan masuk:", messages[0]);
-  });
-}
-
-startBot();
-```
-
-## Contoh penggunaan di project bot
-
-Contoh `package.json` bot:
-
-```json
-{
-  "name": "my-whatsapp-bot",
-  "version": "1.0.0",
-  "main": "index.js",
-  "type": "commonjs",
-  "dependencies": {
-    "cappucina": "github:heydaristo/Cappucina-Baileys",
-    "pino": "^9.0.0"
-  }
-}
-```
-
-Contoh `index.js`:
-
-```js
-const {
-  default: makeWASocket,
-  useMultiFileAuthState,
-  makeCacheableSignalKeyStore,
-  fetchLatestBaileysVersion
-} = require("cappucina");
-const pino = require("pino");
-
-async function connect() {
-  const { state, saveCreds } = await useMultiFileAuthState("./session");
-  const { version } = await fetchLatestBaileysVersion();
-
-  const sock = makeWASocket({
-    version,
-    logger: pino({ level: "silent" }),
-    auth: {
-      creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys)
-    },
-    printQRInTerminal: true
-  });
-
-  sock.ev.on("creds.update", saveCreds);
-}
-
-connect();
-```
-
-## Migrasi dari dependency lama
-
-Kalau sebelumnya project memakai:
-
-```js
-const baileys = require("ourin");
-```
-
-Ganti menjadi:
-
-```js
-const baileys = require("cappucina");
-```
-
-Kalau sebelumnya di `package.json` memakai dependency lama, ganti ke:
-
-```json
-{
-  "dependencies": {
-    "cappucina": "github:heydaristo/Cappucina-Baileys"
-  }
-}
-```
-
-## Scripts package
-
-Repository ini menyediakan script berikut:
-
-- `npm test`
-  Mengecek apakah package bisa di-load dengan benar.
-
-- `npm run pack:check`
-  Simulasi `npm pack --dry-run` untuk memastikan isi package aman sebelum dipublish.
-
-## Struktur package
-
-File penting di repo ini:
-
-- `lib/`
-  Output library utama yang dipakai runtime.
-
-- `WAProto/`
-  Proto/stubs yang dipakai library.
-
-- `engine-requirements.js`
-  Peringatan versi Node.js sebelum install.
-
-- `package.json`
-  Metadata package `cappucina`.
-
-- `PUBLISHING.md`
-  Panduan singkat untuk publish repository/package.
-
-## Publish checklist
-
-Sebelum dipakai publik atau dirilis:
-
-1. Pastikan metadata package sudah sesuai.
-2. Jalankan `npm install`.
-3. Jalankan `npm test`.
-4. Jalankan `npm run pack:check`.
-5. Push ke GitHub.
-6. Buat tag release seperti `v1.0.0` bila ingin dependency lebih stabil.
-
-## Tentang fork
-
-Repository ini menggunakan basis dari fork Baileys, dan repo GitHub saat ini tercatat sebagai fork dari:
-
-- [Nted3xec/baileys](https://github.com/Nted3xec/baileys)
-
-## Credits
-
-Library ini tidak dibuat dari nol. `cappucina` dibangun di atas basis yang berasal dari project berikut:
-
-- [LuckyArch/OurinGlitch-Baileys](https://github.com/LuckyArch/OurinGlitch-Baileys)
-- [Nted3xec/baileys](https://github.com/Nted3xec/baileys)
-- [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys)
-
-Terima kasih untuk para maintainer dan kontributor dari project-project tersebut yang menjadi dasar pengembangan library ini.
-
-## Repository
-
-- GitHub: [heydaristo/Cappucina-Baileys](https://github.com/heydaristo/Cappucina-Baileys)
-- Issues: [Issues](https://github.com/heydaristo/Cappucina-Baileys/issues)
-
-## License
-
-MIT
+Repository ini merupakan modifikasi dari ekosistem **Baileys** dan turunannya, lalu disesuaikan kembali untuk kebutuhan bot dan workflow pribadi.
