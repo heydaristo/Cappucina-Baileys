@@ -1,39 +1,49 @@
 # Cappucina-Baileys
 
-Modifikasi library **Baileys / WhatsApp Web API** yang dipakai sebagai basis koneksi bot WhatsApp. Repository ini ditujukan untuk dipakai sebagai **dependency GitHub** pada project bot milikmu, sehingga update library bisa dikelola dari repo sendiri dan tidak perlu lagi edit manual di `node_modules`.
+Library WhatsApp berbasis **Baileys** yang disiapkan untuk dipakai sebagai **dependency GitHub** pada project bot WhatsApp.
 
-## Tentang project ini
+Tujuan utama repo ini adalah memisahkan layer koneksi WhatsApp dari source bot utama, sehingga update, patch, dan maintenance library bisa dilakukan dari repo sendiri tanpa harus mengedit `node_modules` secara manual setiap kali install ulang.
 
-`Cappucina-Baileys` adalah fork/modifikasi dari ekosistem Baileys yang berisi penyesuaian pada beberapa fitur WhatsApp modern, helper tambahan, utilitas newsletter/saluran, dan beberapa method praktis untuk kebutuhan bot.
+---
 
-Cocok dipakai bila kamu ingin:
-- memisahkan library koneksi dari source bot utama,
-- mengelola update lewat repo GitHub sendiri,
-- melakukan patch/fix tanpa takut perubahan hilang saat `npm install`,
-- menjaga struktur project bot tetap rapi.
+## Kenapa pakai repo ini?
 
-## Fitur utama
+- **Lebih rapi** — core koneksi dipisah dari bot utama.
+- **Lebih aman untuk maintenance** — update library cukup dari repo ini.
+- **Lebih mudah dikustom** — cocok untuk workflow bot pribadi maupun publik.
+- **Tidak bergantung pada edit manual `node_modules`** — perubahan tidak hilang setelah `npm install`.
+- **Cocok untuk migrasi bot lama** — terutama jika source bot masih memakai alias seperti `require("ourin")`.
 
-Beberapa hal yang sudah tersedia di repo ini:
+---
 
-- dukungan koneksi WhatsApp berbasis Baileys,
+## Fungsi utama
+
+Repository ini dipakai sebagai fondasi koneksi untuk bot WhatsApp, dengan fokus pada:
+
+- koneksi WhatsApp Web berbasis Baileys,
 - pairing code,
-- helper untuk message reaction, edit, revoke, dan deteksi tipe pesan,
-- utilitas newsletter / saluran,
-- helper label group,
-- dukungan interactive message, event message, album message, poll result, dan status mention,
-- utilitas auth state seperti `useMultiFileAuthState`,
-- export modul penting seperti `makeWASocket`, `fetchLatestBaileysVersion`, `WAProto`, `Store`, `Utils`, dan lainnya.
+- auth state multi-file,
+- helper event dan message,
+- utilitas untuk pengiriman dan manipulasi pesan,
+- struktur library yang bisa dipanggil ulang dari berbagai project bot.
+
+Repo ini cocok dipakai kalau Anda ingin menjadikan library WhatsApp sebagai komponen terpisah yang bisa dikelola, di-patch, dan di-update secara independen.
+
+---
 
 ## Requirement
 
-Project ini saat ini mengecek **Node.js 20+** saat instalasi.
+- **Node.js 20 atau lebih baru**
+- npm / yarn / pnpm
+- Server atau VPS yang siap menjalankan bot WhatsApp
+
+Cek versi Node:
 
 ```bash
 node -v
 ```
 
-Kalau server masih di Node 18 atau lebih lama, upgrade dulu sebelum dipakai.
+---
 
 ## Instalasi
 
@@ -43,15 +53,15 @@ Kalau server masih di Node 18 atau lebih lama, upgrade dulu sebelum dipakai.
 npm install github:heydaristo/Cappucina-Baileys#main
 ```
 
-### Opsi 2 — pasang sebagai dependency alias
+### Opsi 2 — pasang sebagai alias dependency
 
-Cara ini paling cocok kalau source bot kamu masih memakai:
+Opsi ini cocok kalau source bot Anda masih memakai:
 
 ```js
 require("ourin")
 ```
 
-Contoh di `package.json` bot:
+Contoh `package.json`:
 
 ```json
 {
@@ -61,7 +71,9 @@ Contoh di `package.json` bot:
 }
 ```
 
-Dengan cara itu, source bot tidak perlu diubah besar-besaran karena library tetap dipanggil sebagai `ourin`.
+Dengan model ini, source bot tidak perlu banyak dirombak karena library tetap dapat dipanggil dengan nama `ourin`.
+
+---
 
 ## Contoh penggunaan dasar
 
@@ -88,130 +100,124 @@ async function startBot() {
 startBot()
 ```
 
-## Helper tambahan yang tersedia
+---
 
-Beberapa helper yang terlihat tersedia di library ini:
+## Export yang umum dipakai
 
-### Delay
-
-```js
-await sock.delay(3)
-```
-
-### Reaction
+Beberapa export yang biasanya digunakan dari library ini:
 
 ```js
-await sock.react(m, "🔥")
-await sock.unreact(m)
+const {
+  default: makeWASocket,
+  makeInMemoryStore,
+  useMultiFileAuthState,
+  fetchLatestBaileysVersion,
+  DisconnectReason,
+  jidDecode,
+  proto,
+  WAProto,
+  Utils,
+  Store
+} = require("ourin")
 ```
 
-### Edit pesan
+Ketersediaan export mengikuti isi library pada branch yang Anda pakai.
+
+---
+
+## Contoh helper yang sering dipakai
 
 ```js
-await sock.edit(m, "Pesan baru")
+await sock.sendMessage(jid, { text: "Halo" })
 ```
-
-### Hapus / revoke pesan
 
 ```js
-await sock.del(m)
+await sock.readMessages([key])
 ```
-
-### Deteksi tipe pesan
 
 ```js
-const type = sock.detect(m)
-console.log(type)
+sock.ev.on("messages.upsert", async ({ messages }) => {
+  console.log(messages)
+})
 ```
-
-### Label group
 
 ```js
-await sock.setLabelGroup(jid, "Member Premium")
+sock.ev.on("connection.update", (update) => {
+  console.log(update)
+})
 ```
 
-### Cek ID saluran / newsletter dari URL
+---
 
-```js
-const info = await sock.cekIDSaluran(url)
-console.log(info)
-```
-
-### Follow banyak newsletter sekaligus
-
-```js
-await sock.newsletterMultipleFollow(
-  "120xxxxxxxx@newsletter 120yyyyyyyy@newsletter"
-)
-```
-
-### Cek banned number
-
-```js
-const result = await sock.checkBanned(jid)
-console.log(result)
-```
-
-## Contoh pengiriman pesan yang didukung
-
-Library ini juga memuat dukungan untuk beberapa bentuk pengiriman pesan, seperti:
-
-- `interactiveMessage`
-- `eventMessage`
-- `pollResultMessage`
-- `albumMessage`
-- `groupStatusMessage`
-- `sendStatusMention(...)`
-
-Implementasi detailnya bisa kamu sesuaikan di source bot berdasarkan kebutuhan command/plugin.
-
-## Struktur penting repository
+## Struktur repository
 
 ```text
 lib/
-  Defaults/
-  Signal/
-  Socket/
-  Store/
-  Types/
-  Utils/
-  WABinary/
-  WAM/
-  WAUSync/
 WAProto/
 engine-requirements.js
 package.json
+LICENSE
+README.md
 ```
+
+Secara umum:
+
+- `lib/` berisi core library,
+- `WAProto/` berisi komponen proto/statis terkait WhatsApp,
+- `engine-requirements.js` melakukan pengecekan environment Node,
+- `package.json` mengatur entry point, dependency, dan script package.
+
+---
 
 ## Workflow yang disarankan
 
-Agar rapi dan aman, gunakan alur seperti ini:
+Agar update lebih aman:
 
-1. Update library di repo `Cappucina-Baileys`.
-2. Commit dan push perubahan ke GitHub.
-3. Di repo bot utama, jalankan install ulang dependency.
+1. Lakukan perubahan library di repo ini.
+2. Commit dan push ke GitHub.
+3. Update dependency di repo bot utama.
 4. Restart bot.
+5. Tes pairing, login, kirim pesan, dan event utama.
 
-Contoh:
+Contoh update di bot utama:
 
 ```bash
 npm install
 npm update ourin
 ```
 
-Atau hapus lalu install ulang dependency GitHub bila perlu.
+Kalau perlu, hapus lalu install ulang dependency GitHub agar perubahan benar-benar terambil.
+
+---
+
+## Cocok untuk siapa?
+
+Repo ini cocok untuk:
+
+- developer bot WhatsApp yang ingin struktur project lebih bersih,
+- pengguna yang sering patch library sendiri,
+- owner bot yang ingin update library dari repo GitHub pribadi,
+- migrasi dari setup lama yang sebelumnya mengedit library langsung di `node_modules`.
+
+---
 
 ## Catatan penting
 
 - Jangan jadikan edit manual di `node_modules` sebagai solusi permanen.
-- Jangan ikut push folder `node_modules` ke GitHub.
-- Sebaiknya kunci ke branch atau tag tertentu agar update tidak merusak bot secara tiba-tiba.
-- Lakukan testing pada pairing, send message, newsletter, dan event message setelah setiap update.
+- Jangan commit folder `node_modules` ke repository.
+- Sebaiknya pin ke branch atau tag tertentu bila dipakai di production.
+- Setiap update library sebaiknya diuji ulang sebelum dipakai penuh.
+
+---
 
 ## Lisensi
 
-Project ini memakai lisensi **MIT** sesuai file `LICENSE` yang ada di repository.
+Project ini menggunakan lisensi **MIT**.
+
+Lihat file [`LICENSE`](./LICENSE) untuk detailnya.
+
+---
 
 ## Kredit
 
-Repository ini merupakan modifikasi dari ekosistem **Baileys** dan turunannya, lalu disesuaikan kembali untuk kebutuhan bot dan workflow pribadi.
+Repository ini merupakan turunan dan modifikasi dari ekosistem **Baileys**, lalu disesuaikan untuk kebutuhan bot WhatsApp dan workflow pengembangan pribadi.
